@@ -948,6 +948,7 @@
       background: var(--panel);
       box-shadow: 0 28px 80px rgba(0,0,0,.32);
       text-align: center;
+      position: relative;
     }
 
     h1 {
@@ -1017,21 +1018,28 @@
       font-weight: 800;
     }
 
-    .title-en {
-      display: block;
-      margin-top: 4px;
-      color: #6f5d86;
-      font-size: 15px;
-      font-weight: 900;
-      letter-spacing: .01em;
-    }
-
     .credit-watermark {
       margin: 12px 0 2px;
       color: rgba(81, 64, 100, .62);
       font-size: 11px;
       font-weight: 800;
       letter-spacing: .02em;
+    }
+
+    .lang-toggle {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: auto;
+      min-width: 44px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .72);
+      color: #6f5d86;
+      font-size: 12px;
+      font-weight: 1000;
+      box-shadow: none;
+      border: 1px solid rgba(124, 92, 255, .18);
     }
 
     .tuning {
@@ -1256,6 +1264,13 @@
       .name-tag small {
         font-size: 8px;
       }
+      .lang-toggle {
+        top: 12px;
+        right: 12px;
+        min-width: 38px;
+        padding: 4px 8px;
+        font-size: 11px;
+      }
     }
   </style>
 </head>
@@ -1328,15 +1343,16 @@
 
     <section class="overlay" id="startOverlay">
       <div class="card">
-        <h1>拯救甜恩静麦克风计划<span class="title-en">Mission: Save Eunjung's Mic</span></h1>
-        <p class="subtitle">恩静的麦克风在演唱会时不小心滑落了！<br />Eunjung's microphone slipped during the concert!<br /><br />作为 Queens 的一员，接住掉落的麦克风，帮她完成舞台。<br />As a Queen, catch the falling mics and help her finish the stage.</p>
-        <input id="nickname" maxlength="12" placeholder="输入你的昵称 / Enter your nickname" autocomplete="nickname" />
-        <button id="startBtn" disabled>素材加载中… / Loading assets…</button>
-        <div class="loading-note" id="loadingNote">正在预加载表情素材，第一次玩会更顺滑 / Loading character expressions for a smoother first play.</div>
+        <button class="lang-toggle" id="langToggle" type="button">EN</button>
+        <h1 id="startTitle">拯救甜恩静麦克风计划</h1>
+        <p class="subtitle" id="startDesc">恩静的麦克风在演唱会时不小心滑落了！<br /><br />作为 Queens 的一员，接住掉落的麦克风，帮她完成舞台。</p>
+        <input id="nickname" maxlength="12" placeholder="输入你的昵称" autocomplete="nickname" />
+        <button id="startBtn" disabled>素材加载中…</button>
+        <div class="loading-note" id="loadingNote">正在预加载表情素材，第一次玩会更顺滑</div>
         <div class="credit-watermark">developed by @宫野志保</div>
         <div class="button-row">
-          <button class="secondary" id="rankBtn">排行榜 / Leaderboard</button>
-          <button class="secondary" id="resetBtn">清空本地榜 / Clear</button>
+          <button class="secondary" id="rankBtn">排行榜</button>
+          <button class="secondary" id="resetBtn">清空本地榜</button>
         </div>
       </div>
     </section>
@@ -1376,9 +1392,15 @@
     const gameMusic = document.getElementById("bgm");
     const startBtn = document.getElementById("startBtn");
     const loadingNote = document.getElementById("loadingNote");
+    const langToggle = document.getElementById("langToggle");
+    const startTitle = document.getElementById("startTitle");
+    const startDesc = document.getElementById("startDesc");
+    const rankBtn = document.getElementById("rankBtn");
+    const resetBtn = document.getElementById("resetBtn");
 
     const STORAGE_NAME = "eunjung_mic_catch_name";
     const STORAGE_RANK = "eunjung_mic_catch_rank";
+    const STORAGE_LANG = "eunjung_mic_catch_lang";
     const FALLBACK_GAME_SECONDS = 210;
     const BGM_VOLUME = 0.25;
     const SFX_VOLUME = 0.5;
@@ -1400,6 +1422,38 @@
       "assets/hands/catch-hands.png",
       "assets/ui/life.png"
     ];
+    const copy = {
+      zh: {
+        title: "拯救甜恩静麦克风计划",
+        desc: "恩静的麦克风在演唱会时不小心滑落了！<br /><br />作为 Queens 的一员，接住掉落的麦克风，帮她完成舞台。",
+        nickname: "输入你的昵称",
+        loadingButton: "素材加载中…",
+        start: "开始接麦",
+        loadingInitial: "正在预加载表情素材，第一次玩会更顺滑",
+        loadingProgress: "正在预加载表情素材",
+        loadingReady: "素材加载完成，可以开始啦",
+        loadingFallback: "素材还在后台加载，可先开始试玩",
+        loadingMostlyReady: "素材基本加载完成，可开始试玩",
+        leaderboard: "排行榜",
+        clear: "清空本地榜",
+        toggle: "EN"
+      },
+      en: {
+        title: "Mission: Save Eunjung's Mic",
+        desc: "Eunjung's microphone slipped during the concert!<br /><br />As a Queen, catch the falling mics and help her finish the stage.",
+        nickname: "Enter your nickname",
+        loadingButton: "Loading assets…",
+        start: "Start the Mission",
+        loadingInitial: "Loading character expressions for a smoother first play.",
+        loadingProgress: "Loading character expressions",
+        loadingReady: "Assets loaded. Ready to play!",
+        loadingFallback: "Assets are still loading in the background. You can start now.",
+        loadingMostlyReady: "Assets are mostly ready.",
+        leaderboard: "Leaderboard",
+        clear: "Clear Local Records",
+        toggle: "中文"
+      }
+    };
 
     let score = 0;
     let combo = 0;
@@ -1425,14 +1479,44 @@
     let beatPhase = 0;
     let gameStartTime = 0;
     let audioCtx = null;
+    let uiLang = localStorage.getItem(STORAGE_LANG) === "en" ? "en" : "zh";
+    let preloadStatus = "initial";
+    let preloadSettled = 0;
+    let preloadTotal = preloadImages.length;
 
     const savedName = localStorage.getItem(STORAGE_NAME);
     if (savedName) nicknameInput.value = savedName;
 
-    function unlockStartButton(note = "素材加载完成，可以开始啦 / Assets loaded. Ready to play!") {
+    function t(key) {
+      return copy[uiLang][key];
+    }
+
+    function updateLoadingNote() {
+      if (!loadingNote) return;
+      if (preloadStatus === "progress") {
+        loadingNote.textContent = `${t("loadingProgress")} ${preloadSettled}/${preloadTotal}`;
+        return;
+      }
+      loadingNote.textContent = t(preloadStatus === "ready" ? "loadingReady" : preloadStatus === "fallback" ? "loadingFallback" : preloadStatus === "mostlyReady" ? "loadingMostlyReady" : "loadingInitial");
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = uiLang === "en" ? "en" : "zh-CN";
+      startTitle.textContent = t("title");
+      startDesc.innerHTML = t("desc");
+      nicknameInput.placeholder = t("nickname");
+      rankBtn.textContent = t("leaderboard");
+      resetBtn.textContent = t("clear");
+      langToggle.textContent = t("toggle");
+      startBtn.textContent = startBtn.disabled ? t("loadingButton") : t("start");
+      updateLoadingNote();
+    }
+
+    function unlockStartButton(status = "ready") {
+      preloadStatus = status;
       startBtn.disabled = false;
-      startBtn.textContent = "开始接麦 / Start the Mission";
-      if (loadingNote) loadingNote.textContent = note;
+      startBtn.textContent = t("start");
+      updateLoadingNote();
     }
 
     function preloadImage(src) {
@@ -1448,17 +1532,19 @@
       let settled = 0;
       const total = preloadImages.length;
       const timeoutId = setTimeout(() => {
-        unlockStartButton("素材还在后台加载，可先开始试玩 / Assets are still loading in the background. You can start now.");
+        unlockStartButton("fallback");
       }, 12000);
 
       Promise.all(preloadImages.map(src => preloadImage(src).then(result => {
         settled += 1;
-        if (loadingNote && startBtn.disabled) loadingNote.textContent = `正在预加载表情素材 ${settled}/${total}`;
+        preloadSettled = settled;
+        preloadStatus = "progress";
+        if (startBtn.disabled) updateLoadingNote();
         return result;
       }))).then(results => {
         clearTimeout(timeoutId);
         const failed = results.filter(item => !item.ok).length;
-        unlockStartButton(failed ? "素材基本加载完成，可开始试玩 / Assets are mostly ready." : "素材加载完成，可以开始啦 / Assets loaded. Ready to play!");
+        unlockStartButton(failed ? "mostlyReady" : "ready");
       });
     }
 
@@ -2037,6 +2123,11 @@
     document.getElementById("againBtn").addEventListener("click", startGame);
     document.getElementById("rankBtn").addEventListener("click", () => endGame(true));
     document.getElementById("resetBtn").addEventListener("click", resetRank);
+    langToggle.addEventListener("click", () => {
+      uiLang = uiLang === "zh" ? "en" : "zh";
+      localStorage.setItem(STORAGE_LANG, uiLang);
+      applyLanguage();
+    });
     gameMusic.addEventListener("loadedmetadata", () => {
       if (!running) {
         totalGameSeconds = getSongDurationSeconds();
@@ -2095,6 +2186,7 @@
     updateHud();
     renderRanks();
     hands.style.left = "50%";
+    applyLanguage();
     preloadGameAssets();
   </script>
 </body>
