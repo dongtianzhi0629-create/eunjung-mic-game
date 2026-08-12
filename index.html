@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>接住恩静的麦 Demo</title>
+  <title>拯救甜恩静麦克风计划</title>
   <style>
     :root {
       --pink: #ff6ea8;
@@ -1017,6 +1017,23 @@
       font-weight: 800;
     }
 
+    .title-en {
+      display: block;
+      margin-top: 4px;
+      color: #6f5d86;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: .01em;
+    }
+
+    .credit-watermark {
+      margin: 12px 0 2px;
+      color: rgba(81, 64, 100, .62);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+
     .tuning {
       margin-top: 14px;
       padding: 12px;
@@ -1311,21 +1328,15 @@
 
     <section class="overlay" id="startOverlay">
       <div class="card">
-        <h1>拯救大兵恩静计划</h1>
-        <p class="subtitle">恩静的麦克风在演唱会时候不小心滑落了！你作为 queens 中的一员需要帮她接住掉落的麦克风并且完成歌曲的演出。</p>
-        <input id="nickname" maxlength="12" placeholder="输入你的昵称" autocomplete="nickname" />
-        <button id="startBtn" disabled>素材加载中…</button>
-        <div class="loading-note" id="loadingNote">正在预加载表情素材，第一次玩会更顺滑</div>
-        <details class="tuning">
-          <summary>手感调试</summary>
-          <label>速度 <input id="speedTune" type="range" min="80" max="130" value="100" /> <span id="speedTuneValue">100%</span></label>
-          <label>频率 <input id="freqTune" type="range" min="40" max="120" value="60" /> <span id="freqTuneValue">60%</span></label>
-          <label>接住范围 <input id="catchTune" type="range" min="80" max="140" value="115" /> <span id="catchTuneValue">115%</span></label>
-          <label>BPM <input id="bpmTune" type="range" min="116" max="140" value="130" /> <span id="bpmTuneValue">130</span></label>
-        </details>
+        <h1>拯救甜恩静麦克风计划<span class="title-en">Mission: Save Eunjung's Mic</span></h1>
+        <p class="subtitle">恩静的麦克风在演唱会时不小心滑落了！<br />Eunjung's microphone slipped during the concert!<br /><br />作为 Queens 的一员，接住掉落的麦克风，帮她完成舞台。<br />As a Queen, catch the falling mics and help her finish the stage.</p>
+        <input id="nickname" maxlength="12" placeholder="输入你的昵称 / Enter your nickname" autocomplete="nickname" />
+        <button id="startBtn" disabled>素材加载中… / Loading assets…</button>
+        <div class="loading-note" id="loadingNote">正在预加载表情素材，第一次玩会更顺滑 / Loading character expressions for a smoother first play.</div>
+        <div class="credit-watermark">developed by @宫野志保</div>
         <div class="button-row">
-          <button class="secondary" id="rankBtn">看排行榜</button>
-          <button class="secondary" id="resetBtn">清空本地榜</button>
+          <button class="secondary" id="rankBtn">排行榜 / Leaderboard</button>
+          <button class="secondary" id="resetBtn">清空本地榜 / Clear</button>
         </div>
       </div>
     </section>
@@ -1418,9 +1429,9 @@
     const savedName = localStorage.getItem(STORAGE_NAME);
     if (savedName) nicknameInput.value = savedName;
 
-    function unlockStartButton(note = "素材加载完成，可以开始啦") {
+    function unlockStartButton(note = "素材加载完成，可以开始啦 / Assets loaded. Ready to play!") {
       startBtn.disabled = false;
-      startBtn.textContent = "开始接麦";
+      startBtn.textContent = "开始接麦 / Start the Mission";
       if (loadingNote) loadingNote.textContent = note;
     }
 
@@ -1437,7 +1448,7 @@
       let settled = 0;
       const total = preloadImages.length;
       const timeoutId = setTimeout(() => {
-        unlockStartButton("素材还在后台加载，可先开始试玩");
+        unlockStartButton("素材还在后台加载，可先开始试玩 / Assets are still loading in the background. You can start now.");
       }, 12000);
 
       Promise.all(preloadImages.map(src => preloadImage(src).then(result => {
@@ -1447,7 +1458,7 @@
       }))).then(results => {
         clearTimeout(timeoutId);
         const failed = results.filter(item => !item.ok).length;
-        unlockStartButton(failed ? "素材基本加载完成，可开始试玩" : "素材加载完成，可以开始啦");
+        unlockStartButton(failed ? "素材基本加载完成，可开始试玩 / Assets are mostly ready." : "素材加载完成，可以开始啦 / Assets loaded. Ready to play!");
       });
     }
 
@@ -2050,6 +2061,7 @@
     function bindTune(id, key, labelId) {
       const input = document.getElementById(id);
       const label = document.getElementById(labelId);
+      if (!input || !label) return;
       const sync = () => {
         tune[key] = Number(input.value) / 100;
         label.textContent = `${input.value}%`;
@@ -2065,6 +2077,7 @@
     function bindBpmTune() {
       const input = document.getElementById("bpmTune");
       const label = document.getElementById("bpmTuneValue");
+      if (!input || !label) return;
       const sync = () => {
         tune.bpm = Number(input.value);
         label.textContent = input.value;
