@@ -1003,6 +1003,20 @@
       box-shadow: none;
     }
 
+    button:disabled {
+      cursor: wait;
+      opacity: .68;
+      filter: grayscale(.18);
+    }
+
+    .loading-note {
+      min-height: 18px;
+      margin: 8px 0 0;
+      color: #7a7088;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
     .tuning {
       margin-top: 14px;
       padding: 12px;
@@ -1300,7 +1314,8 @@
         <h1>拯救大兵恩静计划</h1>
         <p class="subtitle">恩静的麦克风在演唱会时候不小心滑落了！你作为 queens 中的一员需要帮她接住掉落的麦克风并且完成歌曲的演出。</p>
         <input id="nickname" maxlength="12" placeholder="输入你的昵称" autocomplete="nickname" />
-        <button id="startBtn">开始接麦</button>
+        <button id="startBtn" disabled>素材加载中…</button>
+        <div class="loading-note" id="loadingNote">正在预加载表情素材，第一次玩会更顺滑</div>
         <details class="tuning">
           <summary>手感调试</summary>
           <label>速度 <input id="speedTune" type="range" min="80" max="130" value="100" /> <span id="speedTuneValue">100%</span></label>
@@ -1348,6 +1363,8 @@
     const leaderboardEl = document.getElementById("leaderboard");
     const nicknameInput = document.getElementById("nickname");
     const gameMusic = document.getElementById("bgm");
+    const startBtn = document.getElementById("startBtn");
+    const loadingNote = document.getElementById("loadingNote");
 
     const STORAGE_NAME = "eunjung_mic_catch_name";
     const STORAGE_RANK = "eunjung_mic_catch_rank";
@@ -1366,6 +1383,12 @@
       bpm: 130
     };
     const characterNames = ["hyomin", "qri", "jiyeon", "eunjung"];
+    const characterStates = ["normal", "scared", "throwing", "happy", "miss"];
+    const preloadImages = [
+      ...characterStates.flatMap(state => characterNames.map(character => `assets/characters/states/${state}/${character}.png`)),
+      "assets/hands/catch-hands.png",
+      "assets/ui/life.png"
+    ];
 
     let score = 0;
     let combo = 0;
@@ -1394,6 +1417,39 @@
 
     const savedName = localStorage.getItem(STORAGE_NAME);
     if (savedName) nicknameInput.value = savedName;
+
+    function unlockStartButton(note = "素材加载完成，可以开始啦") {
+      startBtn.disabled = false;
+      startBtn.textContent = "开始接麦";
+      if (loadingNote) loadingNote.textContent = note;
+    }
+
+    function preloadImage(src) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve({ src, ok: true });
+        img.onerror = () => resolve({ src, ok: false });
+        img.src = src;
+      });
+    }
+
+    function preloadGameAssets() {
+      let settled = 0;
+      const total = preloadImages.length;
+      const timeoutId = setTimeout(() => {
+        unlockStartButton("素材还在后台加载，可先开始试玩");
+      }, 12000);
+
+      Promise.all(preloadImages.map(src => preloadImage(src).then(result => {
+        settled += 1;
+        if (loadingNote && startBtn.disabled) loadingNote.textContent = `正在预加载表情素材 ${settled}/${total}`;
+        return result;
+      }))).then(results => {
+        clearTimeout(timeoutId);
+        const failed = results.filter(item => !item.ok).length;
+        unlockStartButton(failed ? "素材基本加载完成，可开始试玩" : "素材加载完成，可以开始啦");
+      });
+    }
 
     function clamp(value, min, max) {
       return Math.max(min, Math.min(max, value));
@@ -2026,6 +2082,7 @@
     updateHud();
     renderRanks();
     hands.style.left = "50%";
+    preloadGameAssets();
   </script>
 </body>
 </html>
