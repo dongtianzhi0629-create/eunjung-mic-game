@@ -97,6 +97,12 @@
 
     .pill.right { text-align: right; }
 
+    .level-pill {
+      min-width: 78px;
+      line-height: 1.08;
+      text-align: center;
+    }
+
     .time-pill {
       min-width: 46px;
       padding: 6px 8px;
@@ -338,8 +344,8 @@
       position: absolute;
       z-index: 4;
       top: 140px;
-      left: 38px;
-      right: 38px;
+      left: clamp(10px, 6vw, 38px);
+      right: clamp(10px, 6vw, 38px);
       height: 220px;
       display: grid;
       grid-template-columns: .96fr 1fr 1fr 1.04fr;
@@ -388,8 +394,8 @@
     }
 
     .character-sprite {
-      width: 94px;
-      height: 152px;
+      width: clamp(78px, 18vw, 94px);
+      height: clamp(126px, 29vw, 152px);
       object-fit: contain;
       object-position: center bottom;
       user-select: none;
@@ -1139,9 +1145,86 @@
 
     @media (max-height: 700px) {
       .game { min-height: 560px; }
-      .performers { top: 126px; left: 38px; right: 38px; }
+      .performers { top: 126px; left: clamp(8px, 5vw, 30px); right: clamp(8px, 5vw, 30px); }
       .stage { top: 314px; }
       .hint { bottom: 92px; }
+    }
+
+    @media (max-width: 480px) {
+      .hud {
+        left: 6px;
+        right: 6px;
+        top: max(8px, env(safe-area-inset-top));
+        gap: 3px;
+      }
+      .pill {
+        min-width: 0;
+        padding: 6px 6px;
+        font-size: 12px;
+      }
+      .score-pill {
+        min-width: 54px;
+        font-size: 12px;
+      }
+      .lives-pill {
+        min-width: 82px;
+        gap: 1px;
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+      .life-icon {
+        width: 13px;
+        height: 13px;
+      }
+      .level-pill {
+        min-width: 64px;
+        font-size: 12px;
+      }
+      .time-pill {
+        min-width: 38px;
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+      .pause-btn {
+        width: 32px;
+        min-width: 32px;
+        height: 32px;
+        font-size: 14px;
+      }
+      .back-signature::after {
+        font-size: clamp(44px, 13vw, 64px);
+      }
+      .performers {
+        left: 8px;
+        right: 8px;
+        top: 136px;
+        height: 190px;
+      }
+      .person {
+        height: 176px;
+      }
+      .hyomin,
+      .qri,
+      .jiyeon,
+      .eunjung {
+        --stage-x: 0;
+      }
+      .character-sprite {
+        width: clamp(70px, 18vw, 84px);
+        height: clamp(116px, 30vw, 136px);
+      }
+      .person::after {
+        width: 48px;
+      }
+      .name-tag {
+        bottom: -5px;
+        min-width: 48px;
+        padding: 3px 6px 4px;
+        font-size: 10px;
+      }
+      .name-tag small {
+        font-size: 8px;
+      }
     }
   </style>
 </head>
@@ -1163,7 +1246,7 @@
         <img class="life-icon" src="assets/ui/life.png" alt="" />
         <img class="life-icon" src="assets/ui/life.png" alt="" />
       </div>
-      <div class="pill">难度 Level <span id="level">1</span></div>
+      <div class="pill level-pill">难度 Level <span id="level">1</span></div>
       <button class="pause-btn" id="pauseBtn" type="button" aria-label="暂停">⏸</button>
       <div class="pill time-pill" id="time">00:30</div>
     </section>
